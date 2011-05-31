@@ -251,7 +251,7 @@ eGU2XHg4ZnBceDk0XHgxYlAnCnA4CnNiLg==
     \includegraphics[scale=0.25]{images/ssoResult.png}
   \end{center}
   \caption{Ausgabe des Schlüssels im Browser}
-  \label{sigIn}
+  \label{ssoResult}
 \end{figure}
 
 Mit Hilfe der zuvor erlangten Artefakte konnte wir uns lokal ein EncDataHolder nachbauen und erstellten uns mit dem geheimen Schlüssel nun eine Instanz der Klasse EncDataHolder, welche wir dann mit cPickle serialisierten und als Cookie (Listing \ref{ssoCookie2} verwendeen. Dadurch konnten wir in den secureService als Admin eindringen. 
