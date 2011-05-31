@@ -187,7 +187,7 @@ TODO: BULLSHIT powered by Hochi
 
 \subsection{Single Sign On}
 
-Nach einem erfolgreichen Login mit dem Account "simpleVpn" haben wir ziemlich schnell festgestellt, dass die Login-Informationen im Cookie mit dem Schlüssel "token" gespeichert werden. Über die Firefox-Erweiterungen FireCookie\footnote{https://addons.mozilla.org/en-US/firefox/addon/firecookie/} konnten wir das Cookie erfolgreich manipulieren und den Benutzernamen von "simpleVpn" auf "admin" ändern. Durch diese Manipulation war es für uns möglich auf einen weiteren Service zuzugreifen. \\
+Nach einem erfolgreichen Login mit dem Account \emph{simpleVpn} haben wir ziemlich schnell festgestellt, dass die Login-Informationen im Cookie mit dem Schlüssel "token" gespeichert werden. Über die Firefox-Erweiterungen FireCookie\footnote{https://addons.mozilla.org/en-US/firefox/addon/firecookie/} konnten wir das Cookie erfolgreich manipulieren und den Benutzernamen von \emph{simpleVpn} auf \emph{admin} ändern. Durch diese Manipulation war es für uns möglich auf einen weiteren Service zuzugreifen. \\
 Über die vorgefunden Dokumente und Artefakte bekamen wir einen Einblick in die Architektur und konnten sie uns lokal nachbauen. \\
 Nach einer genaueren Betrachtung haben wir erkannt, dass der zweite Teil des Cookies mit Hilfe von base64 verschlüsselt wurde. Nach einer Entschlüsselung stellten wir fest, dass ein - von cPickle serialisiertes Objekt - übergeben wurde. Nach einer Internetsuche\footnote{http://nadiana.com/python-pickle-insecure} konnten wir feststellen, dass es über einen manipulierten Input es möglich ist, beliebigen Code auszuführen. Durch ein fehlerhaftes Cookie konnten wir im DocumentService einen Type-Error auslösen und konnten über den Stacktrace sehen, dass cPickles.load() mit dem Cookie-Token ausgeführt wird. Über diese Schwachstelle haben wir versucht die Anwendung anzugreifen.\\
 Nach mehreren Versuchen gelang es uns den passenden Code für die Ausgabe des Schlüssels zu finden (welcher auch vom Server akzeptiert wird ;), Listing \ref{ssoPrint}). 
@@ -272,7 +272,7 @@ g4MEJceGVlKicKcDgKc2Iu
 \end{itemize}
 
 \subsection{Secure Container}
-Mit Hilfe des Tools JD-GUI\footnote{http://java.decompiler.free.fr/?q=jdgui} konnten wir den Source-Code des jars relativ schnell dekompilieren und in ein IDE importieren. Nach einer kurzen Studie des Codes konnten wir sehr schnell feststellen, dass nach der Ausführung des Inputs "load [...]" der Container bereits entschlüsselt wird. Nach der Eingabe des Passworts wird überprüft, ob dieses Passwort mit dem richtigen Passwort übereinstimmt. Dies geschieht in der Methode Container.hasAccess(). Wir haben den Java-Code so geändert, dass die Methode immer true zurückliefert, egal bei welcher Eingabe. Mit diesem kleinen Trick war es uns möglich die Datei zu entschlüsseln und die Zugangsdaten auszulesen. \\
+Mit Hilfe des Tools JD-GUI\footnote{http://java.decompiler.free.fr/?q=jdgui} konnten wir den Source-Code des jars relativ schnell dekompilieren und in ein IDE importieren. Nach einer kurzen Studie des Codes konnten wir sehr schnell feststellen, dass nach der Ausführung des Inputs \emph{load [...]} der Container bereits entschlüsselt wird. Nach der Eingabe des Passworts wird überprüft, ob dieses Passwort mit dem richtigen Passwort übereinstimmt. Dies geschieht in der Methode Container.hasAccess(). Wir haben den Java-Code so geändert, dass die Methode immer true zurückliefert, egal bei welcher Eingabe. Mit diesem kleinen Trick war es uns möglich die Datei zu entschlüsseln und die Zugangsdaten auszulesen. \\
  \\
 Druckerpassword 4789\\
 Zugangsdaten Büro 789324587\\
@@ -309,7 +309,7 @@ TE WEICHTEILVERKALKUNGEN, ATROPHIEDER, HAUTMUSKELSCHWUND, GESTÖRTET ZELLFUNKTIO
 \end{itemize}
 
 \subsection{Binary-Analyse}
-Um die Verschlüsselung genauer untersuchen zu können, mussten wir vorher das Programm in Assembler-Code entschlüsseln. Unser erster Ansatz war mittels GDB und dem Befehl "disassemble main". In der Ausgabe erkannten wir, dass eine Methode "encryptCharacter" in einer Schleife ausgeführt wird. Unsere erste Vermutung, welche sich auch als richtig herausgestellt hat, war, dass Zeichenweise von stdin eingelesen und verschlüsselt wird. Aus diesem Grund haben wir uns die Methode "encryptCharacter" mit dem Befehl "disassemble encryptCharacter" in GDB genauer angesehen (Listing \ref{binEnc}). 
+Um die Verschlüsselung genauer untersuchen zu können, mussten wir vorher das Programm in Assembler-Code entschlüsseln. Unser erster Ansatz war mittels GDB und dem Befehl \emph{disassemble main}. In der Ausgabe erkannten wir, dass eine Methode \emph{encryptCharacter} in einer Schleife ausgeführt wird. Unsere erste Vermutung, welche sich auch als richtig herausgestellt hat, war, dass Zeichenweise von stdin eingelesen und verschlüsselt wird. Aus diesem Grund haben wir uns die Methode \emph{encryptCharacter} mit dem Befehl \emph{disassemble encryptCharacter} in GDB genauer angesehen (Listing \ref{binEnc}). 
 \begin{lstlisting}[caption={Assembler-Code der Methode encryptCharacter},label=binEnc,basicstyle=\footnotesize]
 (gdb) disassemble encryptCharacter
 Dump of assembler code for function encryptCharacter:
@@ -377,7 +377,7 @@ int main (int argc, const char * argv[]) {
 
 
 \subsection{WLAN-Dump}
-Uns war ja bereits bekannt, dass das Kennwort für das WLAN mit "klotho" beginnt und aus maximal 10 Zeichen besteht. Aus diesem Grund haben wir uns mit dem Tool John the Ripper\footnote{http://www.openwall.com/john/} eine Wordlist von dem Wort "klotho" generieren lassen. Das Wort, welches wir permutieren möchten (in unserem Fall "klotho") haben wir in die Datei wordlist\_in.txt gespeichert. Für unseren ersten Versuch haben wir uns eine Wordlist generieren lassen, welche die Ziffern 0-9 und alle Buchstaben in Groß- und Kleinschreibung anhängt (in allen Permutationen) mit folgendem Befehl generieren lassen (Listing \ref{wlanJohn}). 
+Uns war ja bereits bekannt, dass das Kennwort für das WLAN mit \emph{klotho} beginnt und aus maximal 10 Zeichen besteht. Aus diesem Grund haben wir uns mit dem Tool John the Ripper\footnote{http://www.openwall.com/john/} eine Wordlist von dem Wort \emph{klotho} generieren lassen. Das Wort, welches wir permutieren möchten (in unserem Fall \emph{klotho}) haben wir in die Datei wordlist\_in.txt gespeichert. Für unseren ersten Versuch haben wir uns eine Wordlist generieren lassen, welche die Ziffern 0-9 und alle Buchstaben in Groß- und Kleinschreibung anhängt (in allen Permutationen) mit folgendem Befehl generieren lassen (Listing \ref{wlanJohn}). 
 \begin{lstlisting}[language=sh, caption={Befehl zur Gerneriung der Wordlist},label=wlanJohn,basicstyle=\footnotesize]
 john --stdout --wordlist=wordlist_in.txt --rules 
      > ./wordlist_out.txt
@@ -387,7 +387,7 @@ Um die Konfiguration zu vereinfachen haben wir zuvor die Standardregelen für di
 [List.Rules:Wordlist]
 \$[0-9a-zA-Z]\$[0-9a-zA-Z]\$[0-9a-zA-Z]\$[0-9a-zA-Z]
 \end{lstlisting}
-Über Aircrack\footnote{http://www.aircrack-ng.org/} konnte das WLAN-Dump nach über 2 1/2 Stunden entschlüsselt werden (Listing \ref{wlanAir} und \ref{wlanResult}). Zuvor haben wir die BSSID (02:18:39:BF:D7:67) des WLANs über "aircrack-ng ./Terbium\_1.cap" ermittelt.
+Über Aircrack\footnote{http://www.aircrack-ng.org/} konnte das WLAN-Dump nach über 2 1/2 Stunden entschlüsselt werden (Listing \ref{wlanAir} und \ref{wlanResult}). Zuvor haben wir die BSSID (02:18:39:BF:D7:67) des WLANs über \emph{aircrack-ng ./Terbium\_1.cap} ermittelt.
 \begin{lstlisting}[language=sh, caption={Befehl zum BruteForce Angriff mit Hilfe der generierten WordList},label=wlanAir,basicstyle=\footnotesize]
 aircrack-ng -b 02:18:39:BF:D7:67 -w ./wordlist_out.txt 
      ./Terbium_1.cap
