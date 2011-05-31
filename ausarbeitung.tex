@@ -413,12 +413,12 @@ TODO: BESCHREIBUNG DER ERMITTELUNG DER DATEN, GESPRÄCHSINHALT
 
 \subsection{MD5}
 
-TODO: FELIX BULLSHIT, ERKLÄRUNG WIE MAN DARAUF KOMMT; WAS IST DIE LÜCKE BEI MD5?
-
+In der letzten Aufgabe ging es darum sich mit dem Thema der MD5 Kollision zu beschäftigen. Bei der Md5 Kollision geht es darum, dass zwei unterschiedliche \textit{Nachrichten} den selben 128-Bit-Hashwert aufweisen. Hierzu wird versucht durch analytische Verfahren die Differenz zwischen zwei verschiedenen 512-Bit Blöcken zu verringern und sie austauschbar zu machen. der Artikel von 
+Xiaoyun Wang und Hongbo Yu beschreibt einen Algorithmus zum finden von zweit unterschiedlichen 1024-Bit Sequenzen, die einen gleichen MD5 Hash aufweisen.\\
 
 Zudem sollte ein einfaches Chatprogramm entwickelt werden, welches zum in einer die Eingabe des Ausrufers in einer Schleife einliest und aus der Standardausgabe wieder ausgibt. Zusatzich sollte eine Version entwickelt werden, die zusätzlich zu der Standardfunktionalität die Eingabe in einer Textdatei aufzeichnet. Der entsprechende Source-Code ist in Listing \ref{chatSourceCode} zu sehen. \\
 
-\begin{lstlisting}[captionpos=b, caption={Source Code Chatprogrammt},
+\begin{lstlisting}[captionpos=b, caption={Source-Code Chatprogramm},
 	language=C, label=chatSourceCode, basicstyle=\ttfamily, numberstyle=\tiny, numbers=left, keywordstyle=\color{blue}, stringstyle=\color{red}, commentstyle=\color{green}, numbersep=5pt, basicstyle=\tiny ,frame=single,, showspaces=false, showstringspaces=false]
 
 #include <stdio.h>
@@ -519,7 +519,7 @@ unsigned int m1[32] = {
 
 Mit dem Ergebnis aus dem vorherigen Schritt konnte nun die zwei Programme \textit{good} und \textit{evil} erstellt werden. Hierzu wurde der in Listing \ref{make} zu sehende Befehl verwendet.
 
-\begin{lstlisting}[language=sh,,label=make, caption={Erstellen der beiden Programmpaare \textit{good} und \textit{evil}}, basicstyle=\footnotesize]
+\begin{lstlisting}[language=sh,,label=make, caption={Erstellen des Programmpaares \textit{good} und \textit{evil}}, basicstyle=\footnotesize]
 
 evilize chat -c init.txt -g good -e evil
 Writing 'good' file good.
