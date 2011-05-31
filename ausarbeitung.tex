@@ -7,7 +7,7 @@
 \usepackage[ngerman]{babel}
 \usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage{listings}
+\usepackage{color, listings}
 
 \title{Advanced Internet Security}
 \author{
@@ -19,7 +19,7 @@
 	Felix Rinker, 0726724 \\
 	\\
 	\\
-	Sommersemester 2010
+	Sommersemester 2011
 }
 \date{\today}
 
@@ -415,4 +415,117 @@ TODO: BESCHREIBUNG DER ERMITTELUNG DER DATEN, GESPRÄCHSINHALT
 
 TODO: FELIX BULLSHIT, ERKLÄRUNG WIE MAN DARAUF KOMMT; WAS IST DIE LÜCKE BEI MD5?
 
+
+Zudem sollte ein einfaches Chatprogramm entwickelt werden, welches zum in einer die Eingabe des Ausrufers in einer Schleife einliest und aus der Standardausgabe wieder ausgibt. Zusatzich sollte eine Version entwickelt werden, die zusätzlich zu der Standardfunktionalität die Eingabe in einer Textdatei aufzeichnet. Der entsprechende Source-Code ist in Listing \ref{chatSourceCode} zu sehen. \\
+
+\begin{lstlisting}[captionpos=b, caption={Source Code Chatprogrammt},
+	language=C, label=chatSourceCode, basicstyle=\ttfamily, numberstyle=\tiny, numbers=left, keywordstyle=\color{blue}, stringstyle=\color{red}, commentstyle=\color{green}, numbersep=5pt, basicstyle=\tiny ,frame=single,, showspaces=false, showstringspaces=false]
+
+#include <stdio.h>
+#include <string.h>
+
+int main_good (int argc, const char * argv[]) {
+
+    char string[512];
+    char quitInput[] = "quit";
+   
+   puts("Welcome to ChatMe 0.1.2!");
+    
+    while (scanf("%s", &string)) {
+    
+    	if(strcmp(quitInput, string) ==0 ){
+	puts("I'll be back :D");
+         break;
+    }
+        printf("%s\n", string);
+        
+    }
+    
+    return 0;
+}
+
+int main_evil (int argc, const char * argv[]) {
+    
+    FILE *outfile;
+    char string[512];
+    char quitInput[] = "quit";
+    char *outfilename = "settings.txt";
+    outfile = fopen(outfilename, "w");
+    
+    puts("Welcome to ChatMe 0.1.2!");
+    
+    while (scanf("%s", &string)) {
+        
+        if(strcmp(quitInput, string) ==0 ){
+            
+            puts("I'll be back :D");
+            break;
+        }
+        fprintf(outfile, "%s\n",string);
+        printf("%s\n", string);
+        
+    }
+    return 0;
+}
+\end{lstlisting}
+
+Im weiteren sollte über MD5 Kollison erreicht werden, dass die Binaries der beiden Programme trotz unterschiedlicher Funktionsweise, einen gleichen MD5 Hash aufweisen. 
+Als Hilfe diente uns Anleitung und \textit{evilize} Library von Peter Selinger \footnote{http://www.mscs.dal.ca/~selinger/md5collision/}. Im ersten Schritt wurde der zuvor geschriebene Source-Code in eine Datei mit zwei Main-Methoden  \textit{main\_good} und  \textit{main\_evil} gepackt. Nun wurde das Programm mit Hilfe des Befehls, der in (Listing \ref{compile}) zu sehen ist, gegen die durch Library bereitgestellte Datei \textit{goodevil.o} gelinket und kompiliert.
+
+\begin{lstlisting}[language=sh,,label=compile, caption={Kompilieren und linken gegen \textit{goodevil.o} }, basicstyle=\footnotesize]
+
+gcc chat.c goodevil.o -o chat
+
+\end{lstlisting}
+
+Nun erfolgte die Berechnung des Initializierungsvektors. Im Listing \ref{initVec} ist der Befehl und der berechnete Vektor zu sehen
+
+\begin{lstlisting}[language=sh,,label=initVec, caption={Berechnung des Initializierungsvektors }, basicstyle=\footnotesize]
+
+evilize chat -i
+Initial vector: 0x3fc6a9cd 0x6d00050f 0x0bc2dc1f 0xc4924c32
+
+\end{lstlisting}
+
+Im nächsten schritt erfolgte die Berechnung der MD5 Kollision, deren Ergebnis in eine Datei um geleitet wurde. Im Listing \ref{md5col} ist der verwendete Befehl sowie die errechneten Werte zu sehen.
+
+\begin{lstlisting}[language=sh,,label=md5col, caption={Berechnung der MD5 Kollision}, basicstyle=\footnotesize]
+
+md5coll 0x3fc6a9cd 0x6d00050f 0x0bc2dc1f 0xc4924c32 > init.txt
+
+Random seed: 1383005260
+unsigned int m0[32] = {
+0x22c24f2b, 0x2d6c8b5e, 0x9e0addba, 0xc7be6d27, 
+0x7a983639, 0x11c90cae, 0x062b935d, 0xf9548b30, 
+0x0634ad51, 0xc313dc03, 0x813eb657, 0x12c95d02, 
+0xb4aa5b05, 0xb1aa6423, 0xfaf50a10, 0xaa4c420a, 
+0x12ff3ca9, 0x7baf60bd, 0x9b2f76bd, 0x267bc731, 
+0x47e6bada, 0x4c87b5c4, 0x17b4fd36, 0xbf0c2ad2, 
+0xc036b801, 0x0b31baa4, 0x6b2165d6, 0x3d81bcbf, 
+0xfc39e8f6, 0x6f7010ae, 0x15495fad, 0xb20e2726, 
+};
+
+unsigned int m1[32] = {
+0x22c24f2b, 0x2d6c8b5e, 0x9e0addba, 0xc7be6d27, 
+0xfa983639, 0x11c90cae, 0x062b935d, 0xf9548b30, 
+0x0634ad51, 0xc313dc03, 0x813eb657, 0x12c9dd02, 
+0xb4aa5b05, 0xb1aa6423, 0x7af50a10, 0xaa4c420a, 
+0x12ff3ca9, 0x7baf60bd, 0x9b2f76bd, 0x267bc731, 
+0xc7e6bada, 0x4c87b5c4, 0x17b4fd36, 0xbf0c2ad2, 
+0xc036b801, 0x0b31baa4, 0x6b2165d6, 0x3d813cbf, 
+0xfc39e8f6, 0x6f7010ae, 0x95495fad, 0xb20e2726, 
+
+};\end{lstlisting}
+
+Mit dem Ergebnis aus dem vorherigen Schritt konnte nun die zwei Programme \textit{good} und \textit{evil} erstellt werden. Hierzu wurde der in Listing \ref{make} zu sehende Befehl verwendet.
+
+\begin{lstlisting}[language=sh,,label=make, caption={Erstellen der beiden Programmpaare \textit{good} und \textit{evil}}, basicstyle=\footnotesize]
+
+evilize chat -c init.txt -g good -e evil
+Writing 'good' file good.
+Writing 'evil' file evil.
+
+\end{lstlisting}
+
+Hierbei stellt das  Programm \textit{good} das harmlose Chat-Programm und \textit{evil} das um den automatischen Mitschnitt in eine Textdatei erweiterte Programm dar. Beide erzeugten Programme funktionieren wie erwartet, weisen jedoch bei einem MD5 Check beide den gleichen MD5 Hash  \textit{de05a79e5b45e44d8ea4623e7da060a8} auf.
 \end{document}
