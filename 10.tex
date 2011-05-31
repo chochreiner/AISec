@@ -540,12 +540,43 @@ aircrack-ng -b 02:18:39:BF:D7:67 -w ./wordlist_out.txt
       EAPOL HMAC     : 54 C3 56 9B A6 A2 0D DA 03 34 78 3C 4A C6 D0 73 
 \end{lstlisting}
 
-TODO: BESCHREIBUNG DER ERMITTELUNG DER DATEN, GESPRÄCHSINHALT
+Mithilfe des ermittelten Passwortes für das Netzwerk, konnte wir die zwei bereitgestellten WLAN Dumps entschlüsseln.
+Dazu haben wir das Password als WPA-KEY in Wireshark \footnote{http://www.wireshark.org/} eingetragen und konnte so den Dump analysieren.
+Im zweiten Dump konnten wir eine Skype-Session ausmachen. Es konnte eine Anruf zwischen den Skype-Accounts  \textit{Thanatos} und \textit{plutos}
+gefunden werden. \\
+Im nächsten Schritt haben wir den RTP-Stream bzw. den VoIP-Stream mit dem von Wireshark zur Verfügung gestellten Tool angehört (vgl. Abb. \ref{wsAudio}).
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.4]{images/wsAudio.png}
+  \end{center}
+  \caption{RTP Audiospuren im RTP Player}
+  \label{wsAudio}
+\end{figure}
+
+Aufgrund des hohen Paketverlustes im Stream konnte das Gespräche in großen Teilen nur erahnt werden. In Listing \ref{sipSP} ist die von uns verstandene
+Satzteile zu sehen. 
+
+\begin{lstlisting}[label=sipSP, caption={Verstandene Teile des VoIP-Gespräches}, basicstyle=\footnotesize]
+
+A: Hallo Thantos
+B: Kloto, bist dus?
+A: Ja ich bin es
+A: Geld.. Ich bin unverschoben beiachten?
+B:  ... und ich liefere die Information
+
+A: Aber ich mochte mal Ergebnisse sehen
+B: Morgen
+
+\end{lstlisting}
+
+Aus dieser Konversation geht hervor, dass am Skype-Account von \textit{plutos} ein Teilnehmer Namens  \textit{Kloto} saß.
+Desweiteren wurden noch DNS Anfragen für Websiten wie \textit{www.wetter.com} oder \textit{apod.nasa.gov} gefunden.
 
 \paragraph{Lösung}
 \begin{itemize}
 	\item Wie hießen die beiden Gesprächsteilnehmer? Was ist der Inhalt des Gesprächs?\\
-		Die beiden Gesprächspartner \textit{Thanatos} und \textit{plutos}.
+		Die beiden Gesprächspartner \textit{Thanatos} und \textit{plutos} /  \textit{Kloto}.
 	\item Was für Krimskrams war noch im Dump?\
 		Es waren noch \textit{DNS-Abfragen} auf www.wetter.com und apod.nasa.gov zu finden.
 	\item Wie lautete das Passwort des Klotho-Netzwerks?\\
